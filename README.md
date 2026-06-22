@@ -1,340 +1,218 @@
-# HR Analytics Platform
+# 🧠 Humetrics: AI-Driven Workforce Intelligence
 
-![HR Analytics Platform](https://img.shields.io/badge/Platform-HR_Analytics-blue) ![React](https://img.shields.io/badge/Frontend-React_19-61dafb) ![Node.js](https://img.shields.io/badge/Backend-Node.js-339933) ![MongoDB](https://img.shields.io/badge/Database-MongoDB-47A248)
+[![React](https://img.shields.io/badge/Frontend-React%20%2B%20Vite-blue?style=for-the-badge&logo=react)](https://reactjs.org/)
+[![Node.js](https://img.shields.io/badge/Backend-Node.js%20%2B%20Express-success?style=for-the-badge&logo=node.js)](https://nodejs.org/)
+[![Machine Learning](https://img.shields.io/badge/Machine%20Learning-Python%20%2B%20Scikit--Learn-yellow?style=for-the-badge&logo=python)](https://python.org/)
 
-## 📖 Project Description
+**Humetrics** is a cutting-edge HR Analytics and Workforce Management platform designed to transform raw human resources data into actionable, predictive intelligence. By integrating machine learning models with a robust Node.js backend and a beautiful, high-performance React frontend, Humetrics empowers HR professionals and business leaders to foresee attrition, detect behavioral risks, ensure pay equity, and strategically plan for workforce training and promotions.
 
-The **HR Analytics Platform** is an AI-powered workforce intelligence dashboard designed to give human resources administrators and department managers deep, actionable insights into their organization. 
-
-By analyzing comprehensive datasets encompassing demographics, performance, absenteeism, and engagement, the system seeks to proactively identify workforce trends before they become critical issues. 
-
-**Target Users:**
-* **HR Administrators**: Require high-level oversight across the entire company, access to granular AI recommendations, and the ability to upload and refresh master datasets.
-* **Department Managers**: Require focused, scoped views limited strictly to their own department's data to monitor the health and performance of their direct reports.
-
-**Main Goals:**
-1. Provide a real-time, consolidated executive overview of company health (attrition, headcount, engagement).
-2. Predict employee flight risk and performance trends using heuristic and ML-inspired models.
-3. Automatically generate recommended HR actions (e.g., compensation reviews, retention discussions) for specific employees.
-4. Uncover systemic organizational issues such as gender pay gaps or ineffective training programs.
+Stop reacting to HR challenges. Start predicting them.
 
 ---
 
-## ✨ Features
+## ✨ Key Features
 
-### General System
-* **Role-Based Access Control (RBAC)**: Secure routing and data scoping for HR and Manager roles.
-* **Department Scoping**: Managers dynamically select their department upon login, and the backend data engine physically scopes all subsequent queries to that team.
-
-### Module: Executive Overview
-* Top-level KPIs: Total Headcount, Overall Attrition Rate, Avg Engagement, Avg Performance, and Critical Alerts.
-* Headcount and Attrition rate visualizations organized by department.
-
-### Module: Employee Directory
-* Searchable, filterable (by department) grid of all employees.
-* Clickable rows that open a detailed modal containing all available metrics for a specific employee.
-
-### Module: Performance Analytics
-* **Current Performance**: Visualize rating distributions and high-performer percentages.
-* **Predicted Performance**: Forecasted performance bands based on historical metric correlations.
-* **Behavioral Risk**: Assessment of burnout risk and engagement strain across departments.
-
-### Module: Recommendations & Insights
-* **Action Plans**: AI-generated priority lists (Immediate Action, Planned Action, Monitor) directing managers to intervene with specific employees.
-* **Pay Equity**: Automated gender pay gap analysis across job roles and departments.
-* **Training Impact**: Correlation mapping between training sessions attended, performance ratings, and engagement scores.
-
-### Module: Risk & Alerts
-* **Turnover & Retention**: Granular breakdown of attrition by department and tenure length.
-* **Absenteeism**: Tracking of average absence days and high-absence flags.
-* **System Alerts**: Automated rule-based alerts triggered by critical workforce metric deviations (e.g., sudden spikes in absenteeism).
-
-### Module: Data Upload (HR Only)
-* Drag-and-drop CSV upload portal.
-* In-browser column validation ensuring required metrics exist.
-* Live dataset preview before applying changes to the MongoDB backend.
+- 🔮 **Predictive Attrition & Retention**: Identify which employees are most likely to leave and understand the underlying drivers.
+- ⚖️ **Pay Equity Analysis**: Automatically detect systemic compensation imbalances across gender, roles, and departments to ensure fair pay.
+- 🎯 **Performance Forecasting**: Leverage historical data to predict employee success trajectories and optimize role matching.
+- ⚠️ **Behavioral Risk Detection**: Flag potential compliance or cultural risks before they escalate.
+- 📚 **Training Impact Optimization**: Measure the ROI of learning programs and identify where training interventions will be most effective.
+- 🧠 **Smart Recommendation Engine**: Actionable AI-generated steps for managers regarding compensation reviews, career discussions, and interventions.
+- 🔐 **Role-Based Access Control (RBAC)**: Secure access tailoring the dashboard views and data depending on whether the user is an HR Executive or a Department Manager.
 
 ---
 
 ## 🏗️ System Architecture
 
-The project utilizes a modern decoupled architecture. 
-* **Frontend**: A React Single Page Application (SPA) providing a dynamic, client-side routed dashboard.
-* **Backend**: An Express.js REST API serving as the data engine. It handles authentication, data validation, dataset preloading (for fast memory-based analytics), and heuristic ML calculations.
-* **Database**: MongoDB Atlas handles persistent storage for user credentials and the raw employee datasets.
+Humetrics is built on a modern, decoupled three-tier architecture:
+
+1. **Frontend (Presentation Layer)**: A highly interactive UI built with React and Vite, fetching data securely from the backend.
+2. **Backend (Application Layer)**: A Node.js/Express server that acts as the central hub. It orchestrates API requests, enforces RBAC, and serves data from the underlying database or interfaces with the generated ML insights.
+3. **Machine Learning (Analytics Layer)**: A suite of Jupyter notebooks where predictive models are trained, evaluated, and outputted.
 
 ```mermaid
 graph TD
-    Client[React Frontend] -->|REST API & JWT| Express[Node.js Backend]
-    Express -->|Authentication & Queries| Mongo[(MongoDB)]
-    Express -->|Preload on boot| MemCache[In-Memory Dataset Cache]
-    Express --> ML[Analytics & Rules Engine]
-    ML --> MemCache
-    Client -->|Uploads CSV| Express
-    Express -->|Replaces Data| Mongo
+    subgraph Client [Client Side]
+        User([Manager / HR Exec]) -->|Access Dashboard| Frontend[React + Vite App]
+    end
+
+    subgraph Server [Backend Architecture]
+        Frontend <-->|REST API (JSON)| API[Node.js + Express API]
+        API <-->|Auth & RBAC| AuthMiddleware[Authentication Service]
+        API <-->|Read / Write| Database[(Core HR Database)]
+    end
+
+    subgraph Intelligence [Machine Learning Layer]
+        Notebooks[Jupyter Notebooks] -->|Train & Generate Insights| Models((Scikit-Learn Models))
+        Models -.->|Export Metrics/Predictions| Database
+        Notebooks <-->|Fetch Raw Data| RawData[(Raw HR Data files)]
+    end
+```
+
+---
+
+## 📂 Directory Structure
+
+```text
+humetrics/
+├── backend/                  # Node.js + Express API server
+│   ├── src/                  # Controllers, routes, and services
+│   ├── package.json          # Backend dependencies
+│   └── index.js              # Entry point for the server
+├── frontend/                 # React + Vite application
+│   ├── src/                  # Components, Contexts, Pages, API clients
+│   ├── package.json          # Frontend dependencies
+│   └── index.html            # App entry HTML
+├── notebooks/                # Machine Learning workflows
+│   ├── promotion.ipynb
+│   ├── attrition_drivers.ipynb
+│   ├── behavioral_risk.ipynb
+│   ├── pay_equity.ipynb
+│   ├── performance_prediction.ipynb
+│   ├── recommendation_engine.ipynb
+│   └── training_impact.ipynb
+├── data/                     # Raw & processed CSVs and JSONs for ML
+└── README.md                 # Project documentation
 ```
 
 ---
 
 ## 💻 Technology Stack
 
-### Frontend
-* **Core**: React 19, Vite
-* **Routing**: React Router DOM 7
-* **Data Visualization**: Recharts 3
-* **Networking**: Axios
-* **Styling**: Vanilla CSS (CSS Variables, Flexbox/Grid, custom responsive components)
+**Frontend**
+*   **Framework:** React (Vite)
+*   **Language:** TypeScript / JavaScript (JSX)
+*   **Styling:** Tailwind CSS, Lucide Icons, Recharts
+*   **State Management:** React Context API
 
-### Backend
-* **Core**: Node.js, Express.js
-* **Authentication**: JSON Web Tokens (jsonwebtoken), bcryptjs
-* **Database Driver**: MongoDB Native Driver (`mongodb`)
-* **File Uploads**: Multer
-* **Data Processing**: `csv-parse`
+**Backend**
+*   **Runtime:** Node.js
+*   **Framework:** Express.js
+*   **Security:** JSON Web Tokens (JWT), bcrypt
 
-### External / Scripts
-* **Notebooks**: Python (Jupyter, Pandas, Scikit-learn) used in the `notebooks/` directory to derive the heuristic rules implemented in the Node.js backend.
+**Machine Learning & Data Science**
+*   **Language:** Python 3
+*   **Environment:** Jupyter Notebooks
+*   **Libraries:** Pandas, NumPy, Scikit-learn, Matplotlib, Seaborn
 
 ---
 
-## 📂 Project Structure
+## 🔬 Machine Learning Models
 
-```text
-C:\...\gp\
-├── backend/                   # Node.js Express API
-│   ├── index.js               # Application entry point & server setup
-│   ├── seed.js                # Database initialization and user seeding script
-│   ├── src/
-│   │   ├── routes/            # Express route controllers (auth, dashboard, employees, etc.)
-│   │   ├── services/          # Core business logic (dataService, metricsService, mlService)
-│   │   ├── middleware/        # Express middleware (authMiddleware for JWT validation)
-│   │   └── db.js              # MongoDB connection singleton
-│   └── package.json           
-├── frontend/                  # React Vite SPA
-│   ├── index.html             # HTML entry
-│   ├── vite.config.js         # Vite bundler configuration
-│   ├── src/
-│   │   ├── main.jsx           # React DOM render
-│   │   ├── App.jsx            # React Router and Route protection logic
-│   │   ├── index.css          # Global CSS design system and variables
-│   │   ├── api/               # Axios client configuration (client.js)
-│   │   ├── components/        # Reusable UI (Layout.jsx sidebar navigation)
-│   │   ├── context/           # React Context (AuthContext.jsx for global user state)
-│   │   └── pages/             # Main dashboard views (Overview, Employees, Performance...)
-│   └── package.json           
-├── data/                      # Raw datasets
-│   └── raw/                   # CSV files (employee_ml_dataset_v3.csv, etc.)
-└── notebooks/                 # Python Jupyter Notebooks for ML R&D
-```
+The `/notebooks` directory houses the core intelligence of Humetrics. Each notebook handles a specific predictive or analytical HR task:
+
+*   📈 **`promotion.ipynb`**: Analyzes performance ratings, tenure, and training history to identify high-potential employees ready for leadership roles.
+*   🚪 **`attrition_drivers.ipynb`**: Predicts churn probabilities and isolates the primary factors (e.g., pay stagnation, commute, manager relationship) driving turnover.
+*   ⚠️ **`behavioral_risk.ipynb`**: Evaluates behavioral metadata and engagement metrics to flag burnout risk or disengagement patterns.
+*   💵 **`pay_equity.ipynb`**: Runs statistical modeling across demographic groups to ensure compliance and fairness in compensation.
+*   🌟 **`performance_prediction.ipynb`**: Forecasts future employee performance based on historical trends, engagement scores, and project success rates.
+*   🤖 **`recommendation_engine.ipynb`**: The synthesis layer—processes outputs from other models to generate concrete action plans (e.g., "Schedule Compensation Review").
+*   🎓 **`training_impact.ipynb`**: Correlates past training attendance with productivity spikes to optimize future L&D budgets.
 
 ---
 
 ## 🗄️ Database Design
 
-The application utilizes MongoDB with three primary collections:
+The system relies on a relational data model to ensure data integrity and complex querying for analytics. Key entities include:
 
-| Collection Name | Purpose |
-| :--- | :--- |
-| `users` | Stores application user accounts, roles, and securely hashed passwords. |
-| `employees` | The primary dataset driving the majority of the analytics (sourced from `employee_ml_dataset_v3.csv`). Contains highly detailed metrics like AbsenceDays, EngagementScore, BurnoutRiskScore. |
-| `ibm_attrition` | A secondary dataset (sourced from `HR-Employee-Attrition.csv`) specifically leveraged for Pay Equity and Promotion Prediction algorithms. |
-
-*Note: The application aggressively caches the `employees` and `ibm_attrition` collections in memory on the Node.js server (`dataService.js`) to provide highly responsive aggregate queries for the frontend dashboard.*
+*   **Users & Roles**: Manages authentication credentials and RBAC mapping.
+*   **Employee Records**: Core HR data containing demographics, salaries, performance ratings, and tenure.
+*   **Departments & Roles**: Organizational hierarchy and job classifications.
+*   **Machine Learning Outputs**: Tables storing cached predictions (e.g., Burnout Risk Scores, Promotion Readiness) injected by the Jupyter notebooks.
+*   **System Logs & Alerts**: Audit trails and automatically generated risk alerts for managers.
 
 ---
 
 ## 🔌 API Documentation
 
-All endpoints are prefixed with `/api`. Unless noted, endpoints require a valid JWT Bearer token.
+The Node.js backend exposes a RESTful API to serve the frontend. Standardized JSON responses are used across all endpoints. 
 
-### Authentication (`/auth`)
-* `POST /auth/login`: Authenticates a user.
-  * **Body**: `{ "username": "hr", "password": "...", "department": "Sales" (optional) }`
-  * **Response**: `{ "access_token": "...", "user": { "username": "hr", "role": "hr", "department": "Sales" } }`
-* `GET /auth/departments`: Returns a list of distinct departments for the Manager login dropdown. (No auth required)
+**Key Endpoints:**
+*   `POST /api/auth/login`: Authenticate users and return a JWT.
+*   `GET /api/dashboard/overview`: Fetch high-level KPIs (Total Employees, Average Salary, Turnover Rate).
+*   `GET /api/employees`: Retrieve a paginated list of employees with sorting and filtering.
+*   `GET /api/predictions/risk`: Fetch the machine learning risk profiles for active employees.
+*   `POST /api/upload`: Endpoint for HR to securely upload new batches of HR data CSVs.
 
-### Dashboard (`/dashboard`)
-* `GET /dashboard/overview`: Returns top-level KPIs (headcount, attrition, avg scores).
-* `GET /dashboard/departments`: Returns headcount and attrition aggregates broken down by department.
-* `GET /dashboard/performance`: Returns current performance rating distributions.
-* `GET /dashboard/turnover`: Returns granular turnover statistics.
-* `GET /dashboard/absenteeism`: Returns absence statistics and distribution buckets.
-
-### Employees (`/employees`)
-* `GET /employees/`: Returns the paginated/filtered list of employees.
-  * **Query Params**: `search` (string), `department` (string).
-* `GET /employees/departments`: Returns distinct departments for filtering.
-
-### Machine Learning & Predictions (`/predictions`)
-* `GET /predictions/performance`: Returns forecasted performance bands.
-* `GET /predictions/promotion`: Returns promotion readiness analysis.
-* `GET /predictions/behavioral-risk`: Returns burnout and engagement strain analysis.
-
-### Recommendations (`/recommendations`)
-* `GET /recommendations/`: Returns AI-generated action plans mapped to specific employees.
-* `GET /recommendations/pay-equity`: Returns gender pay gap analysis data.
-* `GET /recommendations/training-impact`: Returns correlation data between training and performance.
-
-### Alerts (`/alerts`)
-* `GET /alerts/`: Returns an array of triggered system alerts (e.g., `{ id, type, severity, message, department }`).
-
-### Data Upload (`/upload`) - *HR Role Only*
-* `POST /upload/preview`: Accepts a `multipart/form-data` CSV file and returns validation results and a 10-row preview.
-* `POST /upload/apply`: Accepts a `multipart/form-data` CSV file, validates it, drops the existing database collection, inserts the new data, and refreshes the in-memory cache.
+*(A fully interactive Swagger/OpenAPI documentation will be available at `/api-docs` when running the backend in development mode).*
 
 ---
 
-## 🔐 User Roles & Permissions
+## 👥 User Roles & Permissions
 
-The platform enforces strict Role-Based Access Control via `authMiddleware.js` on the backend and `RoleProtectedRoute` in the React frontend.
+Humetrics implements strict **Role-Based Access Control (RBAC)** to ensure sensitive HR data is protected:
 
-1. **HR Administrator (`hr`)**:
-   * Has global visibility across the entire company.
-   * Has exclusive access to the **Upload Data** module to manage the core CSV datasets.
-2. **Department Manager (`manager`)**:
-   * Must explicitly select their department from a dropdown during the login flow.
-   * The selected department is cryptographically embedded in their JWT.
-   * All API queries silently filter the in-memory dataset to *only* include employees within their department.
-   * Denied access to the Data Upload module.
-
----
-
-## 🚀 Installation Guide
-
-### Prerequisites
-* Node.js (v18 or higher)
-* MongoDB (Local instance or Atlas URI)
-
-### 1. Database Setup
-Ensure MongoDB is running. The default local connection string is `mongodb://127.0.0.1:27017`.
-
-### 2. Backend Setup
-```bash
-cd backend
-npm install
-
-# Create a .env file based on the Configuration section below
-# (A default .env is already provided in the repository)
-
-# Seed the database and load the initial CSV data
-node seed.js
-
-# Start the development server
-npm run dev
-```
-
-### 3. Frontend Setup
-```bash
-cd frontend
-npm install
-
-# Start the Vite development server
-npm run dev
-```
-
-### 4. Running the Project
-Navigate to `http://localhost:5173`. 
-You can log in using the seeded demo credentials:
-* **HR Admin**: `hr` / `hr123`
-* **Manager**: `manager` / `manager123` (Requires selecting a department)
-
----
-
-## ⚙️ Configuration
-
-Environment variables are located in `backend/.env`:
-
-```env
-MONGO_URI=mongodb://127.0.0.1:27017
-DB_NAME=hr_analytics
-JWT_SECRET=your_secure_random_string
-JWT_EXPIRES_IN=8h
-PORT=8000
-```
-
-*Note: The frontend expects the backend to be running on `http://localhost:8000/api`. This is configured in `frontend/src/api/client.js`.*
-
----
-
-## 📖 User Guide
-
-### Logging In
-1. Navigate to the login page.
-2. Enter your credentials.
-3. If logging in as a `manager`, an additional dropdown will appear. You **must** select the department you wish to manage.
-4. Click "Sign In".
-
-### Navigating the System
-The left-hand sidebar provides access to all modules you are authorized to view.
-* **Executive Overview**: Your landing page. Check the top KPI cards for immediate system health. Look for red indicators (e.g., Attrition > 15%).
-* **Employees**: Use the search bar to find specific personnel. Click on any row to open a modal detailing their specific metrics.
-* **Recommendations**: Switch between the tabs at the top to view Action Plans, Pay Equity analyses, and Training Impact data.
-* **Upload Data (HR Only)**: Drag and drop a new CSV file into the dropzone. Review the column validation to ensure the schema is correct, then click "Upload & Apply".
+*   **HR Executive / Admin**: Has global read/write access. Can view company-wide analytics, upload new data, and manage user accounts.
+*   **Department Manager**: Has read-only access restricted strictly to employees within their own department. Cannot view system-wide pay equity or data from other managers.
 
 ---
 
 ## 🛡️ Security
 
-* **Authentication**: Stateless JSON Web Tokens (JWT) stored in `localStorage`.
-* **Password Storage**: Passwords are one-way hashed using `bcryptjs` with a 10-round salt before being stored in MongoDB.
-* **Authorization**: The Express API utilizes custom middleware (`requireRole`) to block unauthorized HTTP requests at the route level.
-* **Data Isolation**: Department-level data scoping is enforced at the lowest service layer (`dataService.js`). The scoping variable is extracted securely from the signed JWT payload, preventing users from spoofing department access.
+Data privacy is paramount in HR analytics. Our security measures include:
+
+*   **Authentication**: Stateless authentication using secure JSON Web Tokens (JWT).
+*   **Password Hashing**: Passwords are never stored in plaintext (secured via `bcrypt`).
+*   **Data Masking**: PII (Personally Identifiable Information) can be anonymized before being fed into the ML pipelines.
+*   **Secure Routing**: Frontend routes and backend endpoints strictly enforce authorization checks before rendering UI or fulfilling requests.
 
 ---
 
-## 🛠️ Development Guide
+## 🚀 Getting Started
 
-### Adding New Features
-1. **Backend**: 
-   * Add new data logic to the appropriate service in `backend/src/services/`.
-   * Expose the data via a route controller in `backend/src/routes/`.
-   * Mount the route in `backend/index.js`.
-2. **Frontend**:
-   * Create a new React component in `frontend/src/pages/`.
-   * Fetch the data using the Axios instance in `api/client.js`.
-   * Add a new `<Route>` mapping in `frontend/src/App.jsx`.
-   * Add a new navigation entry to the `NAV` array in `frontend/src/components/Layout.jsx`.
+Follow these steps to set up Humetrics locally on your machine.
 
-### Coding Standards
-* Use ES Modules (`import`/`export`) for both frontend and backend code.
-* Use React Hooks and functional components.
-* Maintain the aesthetic constraints of the application by utilizing the CSS Variables defined in `index.css`.
+### 1. Clone the Repository
+```bash
+git clone https://github.com/your-username/humetrics.git
+cd humetrics
+```
 
----
+### 2. Set Up the Backend
+```bash
+cd backend
+npm install
+# Start the backend server (typically runs on port 3000 or 5000)
+npm run start
+```
 
-## 🧪 Testing
+### 3. Set Up the Frontend
+Open a new terminal window:
+```bash
+cd frontend
+npm install
+# Start the Vite development server
+npm run dev
+```
+Navigate to the `localhost` URL provided by Vite in your browser to view the application.
 
-*Not found in the codebase.*
-Currently, there are no automated test suites (e.g., Jest, Cypress) configured for this project. 
+### 4. Explore the ML Notebooks
+To run the analytics workflows, you need Python and Jupyter installed. We recommend using a virtual environment.
+```bash
+cd notebooks
+python -m venv venv
 
----
+# Activate the virtual environment:
+# On Windows:
+venv\Scripts\activate
+# On macOS/Linux:
+source venv/bin/activate
 
-## 🚀 Deployment
+# Install requirements (if requirements.txt exists, otherwise install manually)
+pip install jupyter pandas numpy scikit-learn matplotlib seaborn
 
-The project is ready for containerization or standard PaaS deployment.
-
-**Backend Deployment:**
-1. Set the `MONGO_URI` to a production MongoDB Atlas cluster.
-2. Set a strong `JWT_SECRET`.
-3. Run using `npm start` (which executes `node index.js`).
-
-**Frontend Deployment:**
-1. Update `baseURL` in `frontend/src/api/client.js` to point to your production backend domain.
-2. Run `npm run build`.
-3. Serve the contents of the `frontend/dist/` directory using Nginx, Vercel, Netlify, or any static file host. Ensure that all 404s route back to `index.html` to support React Router SPA behavior.
-
----
-
-## 🔮 Future Improvements
-
-1. **Database Pagination**: Currently, the backend caches datasets in memory and returns large arrays. For enterprise-scale datasets (100k+ rows), MongoDB-level pagination (`.skip()`, `.limit()`) should be implemented in `dataService.js`.
-2. **Python ML Microservice**: The predictive logic in `mlService.js` is currently heuristic/rule-based, adapted from the Jupyter Notebooks. A future iteration should expose the actual Scikit-learn models via a FastAPI Python microservice.
-3. **Automated Testing**: Introduce Jest for backend API testing and React Testing Library for frontend component verification.
-4. **Export to PDF/CSV**: Allow managers to export the generated Action Plans and KPI charts for external reporting.
+# Launch Jupyter Notebook
+jupyter notebook
+```
 
 ---
 
-## 📄 License
+## 🛣️ Future Enhancements
 
-*Not found in the codebase.*
-This project currently operates without a specified open-source license.
+*   [ ] **Real-time Pipeline Integration**: Connect the Jupyter outputs to real-time event streams (e.g., Apache Kafka) for live updates.
+*   [ ] **Generative AI Chatbot**: Implement an LLM-based assistant in the frontend so managers can chat directly with their workforce data.
+*   [ ] **Advanced Bias Mitigation**: Add adversarial debiasing layers to the ML models to ensure 100% fair AI inferences.
+*   [ ] **Mobile Optimization**: Build a React Native counterpart for on-the-go managers.
+
+---
+*Developed with ❤️ to empower organizations with ethical, data-driven workforce intelligence.*

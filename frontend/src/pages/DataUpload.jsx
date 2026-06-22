@@ -1,5 +1,7 @@
 import { useState, useRef, useCallback } from 'react';
 import API from '../api/client';
+import { Upload, FileText, CheckCircle2, XCircle, AlertTriangle, Info, ArrowLeft, ArrowRight, Check } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const STEPS = { SELECT: 0, PREVIEW: 1, UPLOADING: 2, DONE: 3 };
 
@@ -13,7 +15,6 @@ export default function DataUpload() {
     const [loading, setLoading] = useState(false);
     const inputRef = useRef();
 
-    // ── Drag & Drop handlers ──
     const onDragOver = useCallback((e) => { e.preventDefault(); setDragging(true); }, []);
     const onDragLeave = useCallback(() => setDragging(false), []);
     const onDrop = useCallback((e) => {
@@ -83,25 +84,24 @@ export default function DataUpload() {
     };
 
     return (
-        <>
-            <div className="page-header">
-                <h1>📤 Upload Dataset</h1>
-                <p>Upload your employee CSV dataset to replace the current data across all dashboards</p>
-            </div>
-
+        <div className="flex flex-col gap-8 max-w-4xl mx-auto">
             {error && (
-                <div className="upload-error-banner">
-                    <span className="icon">⚠️</span>
-                    <span>{error}</span>
-                    <button onClick={() => setError('')}>✕</button>
+                <div className="flex items-start gap-3 p-4 bg-destructive/10 border border-destructive/30 text-destructive rounded-sm">
+                    <AlertTriangle className="h-5 w-5 shrink-0 mt-0.5" />
+                    <div className="flex-1">
+                        <p className="text-sm font-medium">{error}</p>
+                    </div>
+                    <button onClick={() => setError('')} className="text-destructive hover:text-destructive/80">
+                        <XCircle className="h-5 w-5" />
+                    </button>
                 </div>
             )}
 
             {/* ── Step 1: File Selection ── */}
             {step === STEPS.SELECT && (
-                <div className="upload-section">
+                <div className="flex flex-col gap-6 rise">
                     <div
-                        className={`upload-zone${dragging ? ' dragging' : ''}`}
+                        className={`relative flex flex-col items-center justify-center min-h-[320px] p-10 border-2 border-dashed transition-all cursor-pointer bg-card ${dragging ? 'border-primary bg-primary/5 shadow-[0_0_40px_rgba(var(--primary),0.15)]' : 'border-rule hover:bg-accent/5 hover:border-primary/40'}`}
                         onDragOver={onDragOver}
                         onDragLeave={onDragLeave}
                         onDrop={onDrop}
@@ -111,45 +111,47 @@ export default function DataUpload() {
                             ref={inputRef}
                             type="file"
                             accept=".csv"
-                            style={{ display: 'none' }}
+                            className="hidden"
                             onChange={(e) => {
                                 if (e.target.files[0]) handleFileSelect(e.target.files[0]);
                             }}
                         />
                         {loading ? (
-                            <div className="upload-zone-loading">
-                                <div className="spinner" />
-                                <p>Analyzing file…</p>
+                            <div className="flex flex-col items-center gap-4">
+                                <div className="h-8 w-8 animate-spin rounded-full border-4 border-rule border-t-primary" />
+                                <span className="font-mono text-xs text-muted-foreground uppercase tracking-widest">Analyzing file…</span>
                             </div>
                         ) : (
-                            <>
-                                <div className="upload-zone-icon">📂</div>
-                                <h3>Drop your CSV file here</h3>
-                                <p>or click to browse</p>
-                                <div className="upload-zone-hint">
-                                    Maximum file size: 50 MB · CSV format only
+                            <div className="text-center">
+                                <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-accent/20 mb-6">
+                                    <Upload className="h-10 w-10 text-primary" />
                                 </div>
-                            </>
+                                <h3 className="font-display text-3xl text-ink mb-2">Drop your CSV file here</h3>
+                                <p className="text-muted-foreground">or click to browse</p>
+                                <div className="mt-8 px-4 py-2 bg-accent/10 border border-rule/50 rounded-full inline-block">
+                                    <span className="text-xs text-muted-foreground font-mono">Max size: 50 MB · CSV format only</span>
+                                </div>
+                            </div>
                         )}
                     </div>
 
-                    <div className="upload-info-cards">
-                        <div className="card upload-info-card">
-                            <h4>📋 Required Columns</h4>
-                            <div className="column-badge-list">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="p-6 border border-rule bg-card">
+                            <h4 className="font-display text-xl text-ink mb-4 flex items-center gap-2"><CheckCircle2 className="h-5 w-5 text-success" /> Required Columns</h4>
+                            <div className="flex flex-wrap gap-2">
                                 {['EmployeeID', 'Department', 'JobTitle', 'Gender', 'Salary', 'TenureYears', 'PerformanceRating', 'AbsenceDays_Last6M', 'EngagementScore', 'AttritionFlag'].map(c => (
-                                    <span key={c} className="column-badge required">{c}</span>
+                                    <span key={c} className="font-mono text-[10px] px-2 py-1 bg-primary/10 text-primary border border-primary/20 rounded-sm">{c}</span>
                                 ))}
                             </div>
                         </div>
-                        <div className="card upload-info-card">
-                            <h4>🔧 Optional Columns</h4>
-                            <p className="upload-info-note">Missing optional columns will be auto-derived or set to defaults</p>
-                            <div className="column-badge-list">
+                        <div className="p-6 border border-rule bg-card">
+                            <h4 className="font-display text-xl text-ink mb-2 flex items-center gap-2"><Info className="h-5 w-5 text-muted-foreground" /> Optional Columns</h4>
+                            <p className="text-sm text-muted-foreground mb-4">Missing columns will be auto-derived or set to defaults.</p>
+                            <div className="flex flex-wrap gap-2">
                                 {['HighPerformerFlag', 'EarlyTenureFlag', 'BurnoutRiskScore', 'TrainingCount', 'AvgOverallScore', 'CareerStagnationFlag'].map(c => (
-                                    <span key={c} className="column-badge optional">{c}</span>
+                                    <span key={c} className="font-mono text-[10px] px-2 py-1 bg-accent/30 text-muted-foreground border border-rule rounded-sm">{c}</span>
                                 ))}
-                                <span className="column-badge optional">+13 more</span>
+                                <span className="font-mono text-[10px] px-2 py-1 bg-accent/30 text-muted-foreground border border-rule rounded-sm">+13 more</span>
                             </div>
                         </div>
                     </div>
@@ -158,107 +160,89 @@ export default function DataUpload() {
 
             {/* ── Step 2: Preview & Validation ── */}
             {step === STEPS.PREVIEW && preview && (
-                <div className="upload-section">
+                <div className="flex flex-col gap-8 rise">
                     {/* File info bar */}
-                    <div className="upload-file-bar">
-                        <div className="upload-file-info">
-                            <span className="file-icon">📄</span>
+                    <div className="flex items-center justify-between p-4 border border-rule bg-card">
+                        <div className="flex items-center gap-4">
+                            <div className="h-12 w-12 flex items-center justify-center bg-accent/20 rounded-sm">
+                                <FileText className="h-6 w-6 text-primary" />
+                            </div>
                             <div>
-                                <div className="file-name">{preview.filename}</div>
-                                <div className="file-meta">
+                                <h3 className="font-medium text-ink">{preview.filename}</h3>
+                                <p className="font-numeric text-xs text-muted-foreground mt-1">
                                     {preview.total_rows.toLocaleString()} rows · {formatSize(preview.size_bytes)} · {preview.columns.length} columns
-                                </div>
+                                </p>
                             </div>
                         </div>
-                        <button className="btn-secondary" onClick={reset}>Change file</button>
+                        <Button variant="outline" onClick={reset} size="sm" className="rounded-none">Change file</Button>
                     </div>
 
                     {/* Validation Results */}
-                    <div className="upload-validation">
-                        <h3>
-                            {preview.validation.valid
-                                ? '✅ Validation Passed'
-                                : '❌ Validation Failed'}
-                        </h3>
+                    <div className="p-6 border border-rule bg-card">
+                        <h2 className={`font-display text-2xl mb-6 flex items-center gap-2 ${preview.validation.valid ? 'text-success' : 'text-destructive'}`}>
+                            {preview.validation.valid ? <><CheckCircle2 className="h-6 w-6" /> Validation Passed</> : <><XCircle className="h-6 w-6" /> Validation Failed</>}
+                        </h2>
 
-                        {preview.validation.found.length > 0 && (
-                            <div className="validation-group">
-                                <h4>✅ Required columns found ({preview.validation.found.length}/{preview.validation.found.length + preview.validation.missing.length})</h4>
-                                <div className="column-badge-list">
-                                    {preview.validation.found.map(c => (
-                                        <span key={c} className="column-badge valid">{c}</span>
-                                    ))}
+                        <div className="space-y-6">
+                            {preview.validation.found.length > 0 && (
+                                <div>
+                                    <h4 className="eyebrow text-success mb-3 flex items-center gap-2"><Check className="h-3 w-3" /> Required found ({preview.validation.found.length}/{preview.validation.found.length + preview.validation.missing.length})</h4>
+                                    <div className="flex flex-wrap gap-2">
+                                        {preview.validation.found.map(c => (
+                                            <span key={c} className="font-mono text-[10px] px-2 py-1 bg-success/10 text-success border border-success/30 rounded-sm">{c}</span>
+                                        ))}
+                                    </div>
                                 </div>
-                            </div>
-                        )}
+                            )}
 
-                        {preview.validation.missing.length > 0 && (
-                            <div className="validation-group">
-                                <h4>❌ Missing required columns</h4>
-                                <div className="column-badge-list">
-                                    {preview.validation.missing.map(c => (
-                                        <span key={c} className="column-badge missing">{c}</span>
-                                    ))}
+                            {preview.validation.missing.length > 0 && (
+                                <div>
+                                    <h4 className="eyebrow text-destructive mb-3 flex items-center gap-2"><XCircle className="h-3 w-3" /> Missing required</h4>
+                                    <div className="flex flex-wrap gap-2">
+                                        {preview.validation.missing.map(c => (
+                                            <span key={c} className="font-mono text-[10px] px-2 py-1 bg-destructive/10 text-destructive border border-destructive/30 rounded-sm">{c}</span>
+                                        ))}
+                                    </div>
                                 </div>
-                            </div>
-                        )}
+                            )}
 
-                        {preview.validation.optionalMissing.length > 0 && (
-                            <div className="validation-group">
-                                <h4>⚠️ Optional columns will be auto-generated ({preview.validation.optionalMissing.length})</h4>
-                                <div className="column-badge-list">
-                                    {preview.validation.optionalMissing.map(c => (
-                                        <span key={c} className="column-badge defaulted">{c}</span>
-                                    ))}
+                            {preview.validation.optionalMissing.length > 0 && (
+                                <div>
+                                    <h4 className="eyebrow text-warning-foreground mb-3 flex items-center gap-2"><AlertTriangle className="h-3 w-3" /> Auto-generated ({preview.validation.optionalMissing.length})</h4>
+                                    <div className="flex flex-wrap gap-2">
+                                        {preview.validation.optionalMissing.map(c => (
+                                            <span key={c} className="font-mono text-[10px] px-2 py-1 bg-warning/10 text-warning-foreground border border-warning/30 rounded-sm">{c}</span>
+                                        ))}
+                                    </div>
                                 </div>
-                            </div>
-                        )}
-
-                        {preview.validation.optionalFound.length > 0 && (
-                            <div className="validation-group">
-                                <h4>✅ Optional columns found ({preview.validation.optionalFound.length})</h4>
-                                <div className="column-badge-list">
-                                    {preview.validation.optionalFound.map(c => (
-                                        <span key={c} className="column-badge valid">{c}</span>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-
-                        {preview.validation.extra.length > 0 && (
-                            <div className="validation-group">
-                                <h4>ℹ️ Extra columns (will be kept)</h4>
-                                <div className="column-badge-list">
-                                    {preview.validation.extra.map(c => (
-                                        <span key={c} className="column-badge extra">{c}</span>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
+                            )}
+                        </div>
                     </div>
 
                     {/* Data Preview Table */}
-                    <div className="card" style={{ overflow: 'auto' }}>
-                        <h3 style={{ marginBottom: 16, fontSize: 15 }}>📊 Data Preview (first {preview.preview.length} rows)</h3>
-                        <div className="preview-table-wrap">
-                            <table className="data-table preview-table">
+                    <div className="border border-rule bg-card overflow-hidden">
+                        <div className="p-4 border-b border-rule bg-paper/50">
+                            <h3 className="font-display text-xl text-ink">Data Preview <span className="text-base text-muted-foreground italic">(first {preview.preview.length} rows)</span></h3>
+                        </div>
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left text-sm border-collapse">
                                 <thead>
-                                    <tr>
-                                        {preview.columns.slice(0, 12).map(col => (
-                                            <th key={col}>{col}</th>
+                                    <tr className="border-b border-rule bg-paper/20">
+                                        {preview.columns.slice(0, 10).map(col => (
+                                            <th key={col} className="py-2 px-3 font-mono text-[10px] uppercase tracking-wider text-muted-foreground whitespace-nowrap">{col}</th>
                                         ))}
-                                        {preview.columns.length > 12 && (
-                                            <th>+{preview.columns.length - 12} more</th>
+                                        {preview.columns.length > 10 && (
+                                            <th className="py-2 px-3 font-mono text-[10px] uppercase tracking-wider text-muted-foreground whitespace-nowrap">+{preview.columns.length - 10} more</th>
                                         )}
                                     </tr>
                                 </thead>
-                                <tbody>
+                                <tbody className="divide-y divide-rule/50">
                                     {preview.preview.map((row, i) => (
-                                        <tr key={i}>
-                                            {preview.columns.slice(0, 12).map(col => (
-                                                <td key={col}>{row[col] ?? ''}</td>
+                                        <tr key={i} className="hover:bg-accent/10">
+                                            {preview.columns.slice(0, 10).map(col => (
+                                                <td key={col} className="py-2 px-3 whitespace-nowrap max-w-[150px] truncate text-ink">{row[col] ?? ''}</td>
                                             ))}
-                                            {preview.columns.length > 12 && <td>…</td>}
+                                            {preview.columns.length > 10 && <td className="py-2 px-3 text-muted-foreground">…</td>}
                                         </tr>
                                     ))}
                                 </tbody>
@@ -267,70 +251,68 @@ export default function DataUpload() {
                     </div>
 
                     {/* Action buttons */}
-                    <div className="upload-actions">
-                        <button className="btn-secondary" onClick={reset}>
-                            ← Back
-                        </button>
-                        {preview.validation.valid && (
-                            <button className="btn-primary upload-apply-btn" onClick={handleApply}>
-                                🚀 Upload & Apply Dataset
-                            </button>
+                    <div className="flex items-center gap-4 mt-2">
+                        <Button variant="outline" onClick={reset} className="rounded-none">
+                            <ArrowLeft className="mr-2 h-4 w-4" /> Back
+                        </Button>
+                        {preview.validation.valid ? (
+                            <Button onClick={handleApply} className="rounded-none bg-primary text-primary-foreground hover:bg-primary/90">
+                                Upload & Apply Dataset <ArrowRight className="ml-2 h-4 w-4" />
+                            </Button>
+                        ) : (
+                            <div className="flex-1 p-3 bg-destructive/10 border border-destructive/20 text-destructive text-sm flex items-center gap-2">
+                                <AlertTriangle className="h-4 w-4" />
+                                Cannot apply this dataset. Required columns are missing.
+                            </div>
                         )}
                     </div>
-
-                    {!preview.validation.valid && (
-                        <div className="upload-warning-box">
-                            <span>⚠️</span>
-                            <p>Cannot apply this dataset — required columns are missing. Please update your CSV and try again.</p>
-                        </div>
-                    )}
                 </div>
             )}
 
             {/* ── Step 3: Uploading ── */}
             {step === STEPS.UPLOADING && (
-                <div className="upload-section">
-                    <div className="upload-progress-card card">
-                        <div className="spinner" style={{ width: 48, height: 48 }} />
-                        <h3>Processing dataset…</h3>
-                        <p>Preprocessing, applying models, and updating all dashboards</p>
-                        <div className="upload-progress-bar">
-                            <div className="upload-progress-fill" />
-                        </div>
+                <div className="flex flex-col items-center justify-center p-20 border border-rule bg-card text-center rise">
+                    <div className="h-12 w-12 animate-spin rounded-full border-4 border-rule border-t-primary mb-6" />
+                    <h3 className="font-display text-3xl text-ink mb-2">Processing dataset…</h3>
+                    <p className="text-muted-foreground mb-8">Preprocessing, applying models, and updating all dashboards.</p>
+                    <div className="w-full max-w-md h-1 bg-rule rounded-full overflow-hidden">
+                        <div className="h-full bg-primary w-1/3 animate-[pulse_1.5s_ease-in-out_infinite]" />
                     </div>
                 </div>
             )}
 
             {/* ── Step 4: Success ── */}
             {step === STEPS.DONE && uploadResult && (
-                <div className="upload-section">
-                    <div className="upload-success-card card">
-                        <div className="success-icon">✅</div>
-                        <h2>Dataset Uploaded Successfully!</h2>
-                        <p>{uploadResult.total_rows.toLocaleString()} rows processed and applied</p>
+                <div className="flex flex-col items-center p-16 border border-rule bg-card text-center rise">
+                    <div className="h-24 w-24 rounded-full bg-success/20 flex items-center justify-center mb-6">
+                        <CheckCircle2 className="h-12 w-12 text-success" />
+                    </div>
+                    <h2 className="font-display text-4xl text-ink mb-3">Dataset Uploaded Successfully</h2>
+                    <p className="text-muted-foreground mb-10 font-numeric text-lg">
+                        {uploadResult.total_rows.toLocaleString()} rows processed and applied.
+                    </p>
 
-                        {uploadResult.columns_defaulted?.length > 0 && (
-                            <div className="upload-defaulted-info">
-                                <h4>Auto-generated columns:</h4>
-                                <div className="column-badge-list" style={{ justifyContent: 'center' }}>
-                                    {uploadResult.columns_defaulted.map(c => (
-                                        <span key={c} className="column-badge defaulted">{c}</span>
-                                    ))}
-                                </div>
+                    {uploadResult.columns_defaulted?.length > 0 && (
+                        <div className="mb-10 p-6 bg-warning/10 border border-warning/30 rounded-sm w-full max-w-2xl text-left">
+                            <h4 className="eyebrow text-warning-foreground mb-3">Auto-generated columns:</h4>
+                            <div className="flex flex-wrap gap-2">
+                                {uploadResult.columns_defaulted.map(c => (
+                                    <span key={c} className="font-mono text-[10px] px-2 py-1 bg-warning/20 text-warning-foreground border border-warning/40 rounded-sm">{c}</span>
+                                ))}
                             </div>
-                        )}
-
-                        <div className="upload-success-actions">
-                            <button className="btn-primary" onClick={() => window.location.href = '/'}>
-                                📊 View Dashboards
-                            </button>
-                            <button className="btn-secondary" onClick={reset}>
-                                📤 Upload Another
-                            </button>
                         </div>
+                    )}
+
+                    <div className="flex items-center gap-4">
+                        <Button onClick={() => window.location.href = '/'} className="rounded-none">
+                            View Dashboards
+                        </Button>
+                        <Button variant="outline" onClick={reset} className="rounded-none">
+                            Upload Another
+                        </Button>
                     </div>
                 </div>
             )}
-        </>
+        </div>
     );
 }

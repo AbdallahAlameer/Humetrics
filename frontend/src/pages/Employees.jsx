@@ -1,5 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import API from '../api/client';
+import { Input } from "@/components/ui/input";
+import { Search, X, User, Briefcase, TrendingUp, Clock, BookOpen, DollarSign, AlertTriangle, Activity, Award, ChevronRight } from "lucide-react";
+
+import { EmployeeDetailPanel } from '../components/EmployeeDetailPanel';
+import { useCurrency } from '../context/CurrencyContext';
+
+/* ── Main Page ────────────────────────────────────────────────────── */
 
 export default function Employees() {
     const [employees, setEmployees] = useState([]);
@@ -8,6 +16,7 @@ export default function Employees() {
     const [dept, setDept] = useState('');
     const [loading, setLoading] = useState(true);
     const [selected, setSelected] = useState(null);
+    const { formatCurrencyShorthand } = useCurrency();
 
     useEffect(() => {
         API.get('/employees/departments').then((r) => setDepartments(r.data));
@@ -23,92 +32,85 @@ export default function Employees() {
             .finally(() => setLoading(false));
     }, [search, dept]);
 
-    return (
-        <>
-            <div className="page-header">
-                <h1>👥 Employee Directory</h1>
-                <p>Browse and search the workforce</p>
-            </div>
+    const handleSelect = useCallback((emp) => {
+        setSelected(emp);
+    }, []);
 
-            <div className="card" style={{ marginBottom: 24 }}>
-                <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-                    <input
-                        type="text" placeholder="Search by ID, name, or title..."
-                        value={search} onChange={(e) => setSearch(e.target.value)}
-                        style={{
-                            flex: 1, minWidth: 200, padding: '10px 16px', borderRadius: 10,
-                            border: '1px solid var(--border-glass)', background: 'rgba(255,255,255,0.04)',
-                            color: 'var(--text-primary)', fontSize: 14, fontFamily: 'inherit', outline: 'none',
-                        }}
+    const handleClose = useCallback(() => {
+        setSelected(null);
+    }, []);
+
+    return (
+        <div className="flex flex-col gap-8">
+            <section className="flex flex-wrap gap-4 items-center border-b border-rule pb-6">
+                <div className="relative w-full md:w-80">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                        type="text" 
+                        placeholder="Search ID, name, title..."
+                        value={search} 
+                        onChange={(e) => setSearch(e.target.value)}
+                        className="pl-9 bg-paper rounded-none border-rule focus-visible:ring-0 focus-visible:border-primary font-mono text-sm"
                     />
-                    <select value={dept} onChange={(e) => setDept(e.target.value)} style={{
-                        padding: '10px 16px', borderRadius: 10,
-                        border: '1px solid var(--border-glass)', background: 'var(--bg-secondary)',
-                        color: 'var(--text-primary)', fontSize: 14, fontFamily: 'inherit',
-                    }}>
+                </div>
+                <div className="w-full md:w-64">
+                    <select 
+                        value={dept} 
+                        onChange={(e) => setDept(e.target.value)} 
+                        className="flex h-10 w-full bg-paper px-3 py-2 text-sm border border-rule rounded-none focus:outline-none focus:border-primary font-mono"
+                    >
                         <option value="">All Departments</option>
                         {departments.map((d) => <option key={d} value={d}>{d}</option>)}
                     </select>
                 </div>
-            </div>
+            </section>
 
-            {/* Employee detail modal */}
-            {selected && (
-                <div style={{
-                    position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200,
-                }} onClick={() => setSelected(null)}>
-                    <div className="card" style={{ maxWidth: 600, width: '90%', maxHeight: '80vh', overflow: 'auto' }} onClick={(e) => e.stopPropagation()}>
-                        <div className="flex-between" style={{ marginBottom: 20 }}>
-                            <h2>{selected.EmployeeID}</h2>
-                            <button onClick={() => setSelected(null)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: 24, cursor: 'pointer' }}>✕</button>
-                        </div>
-                        <table className="data-table">
-                            <tbody>
-                                {Object.entries(selected).map(([k, v]) => (
-                                    <tr key={k}>
-                                        <td style={{ fontWeight: 600, color: 'var(--text-secondary)' }}>{k}</td>
-                                        <td>{typeof v === 'number' ? (Number.isInteger(v) ? v : v.toFixed(3)) : String(v)}</td>
+            {/* Employee detail slide-over */}
+            <EmployeeDetailPanel employee={selected} onClose={handleClose} />
+
+            {loading ? (
+                <div className="flex h-64 items-center justify-center flex-col gap-4">
+                    <div className="h-8 w-8 animate-spin rounded-full border-4 border-rule border-t-primary" />
+                    <span className="font-mono text-xs text-muted-foreground uppercase tracking-widest">Compiling records...</span>
+                </div>
+            ) : (
+                <section className="rise border border-rule bg-card">
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left text-sm border-collapse">
+                            <thead>
+                                <tr className="border-b border-rule bg-paper/50">
+                                    <th className="py-3 px-4 font-mono text-[10px] uppercase tracking-wider text-muted-foreground font-medium whitespace-nowrap">Employee ID</th>
+                                    <th className="py-3 px-4 font-mono text-[10px] uppercase tracking-wider text-muted-foreground font-medium whitespace-nowrap">Department</th>
+                                    <th className="py-3 px-4 font-mono text-[10px] uppercase tracking-wider text-muted-foreground font-medium whitespace-nowrap">Job Title</th>
+                                    <th className="py-3 px-4 font-mono text-[10px] uppercase tracking-wider text-muted-foreground font-medium whitespace-nowrap">Gender</th>
+                                    <th className="py-3 px-4 font-mono text-[10px] uppercase tracking-wider text-muted-foreground font-medium whitespace-nowrap text-right">Salary</th>
+                                    <th className="py-3 px-4 font-mono text-[10px] uppercase tracking-wider text-muted-foreground font-medium whitespace-nowrap text-center">Tenure</th>
+                                    <th className="py-3 px-4 font-mono text-[10px] uppercase tracking-wider text-muted-foreground font-medium whitespace-nowrap text-center">Rating</th>
+                                    <th className="py-3 px-4 font-mono text-[10px] uppercase tracking-wider text-muted-foreground font-medium whitespace-nowrap">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-rule/50">
+                                {employees.map((e) => (
+                                    <tr key={e.EmployeeID} onClick={() => handleSelect(e)} className="hover:bg-accent/20 transition-colors cursor-pointer group">
+                                        <td className="py-3 px-4 font-medium text-primary group-hover:underline underline-offset-4">{e.EmployeeID}</td>
+                                        <td className="py-3 px-4 text-ink">{e.Department}</td>
+                                        <td className="py-3 px-4 text-ink">{e.JobTitle}</td>
+                                        <td className="py-3 px-4 text-muted-foreground">{e.Gender}</td>
+                                        <td className="py-3 px-4 font-numeric tabular-nums text-right text-ink">{formatCurrencyShorthand(e.Salary)}</td>
+                                        <td className="py-3 px-4 font-numeric tabular-nums text-center text-ink">{e.TenureYears}y</td>
+                                        <td className="py-3 px-4 font-numeric tabular-nums text-center text-ink">{e.PerformanceRating}</td>
+                                        <td className="py-3 px-4">
+                                            <span className={`font-numeric text-[10px] px-2 py-0.5 border rounded-sm ${e.AttritionFlag ? 'bg-destructive/10 text-destructive border-destructive/30' : 'bg-success/10 text-success border-success/30'}`}>
+                                                {e.AttritionFlag ? 'Left' : 'Active'}
+                                            </span>
+                                        </td>
                                     </tr>
                                 ))}
                             </tbody>
                         </table>
                     </div>
-                </div>
+                </section>
             )}
-
-            {loading ? (
-                <div className="loading"><div className="spinner" /><span className="loading-text">Loading...</span></div>
-            ) : (
-                <div className="chart-card">
-                    <table className="data-table">
-                        <thead>
-                            <tr>
-                                <th>Employee ID</th><th>Department</th><th>Job Title</th>
-                                <th>Gender</th><th>Salary</th><th>Tenure</th><th>Rating</th><th>Attrition</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {employees.map((e) => (
-                                <tr key={e.EmployeeID} onClick={() => setSelected(e)} style={{ cursor: 'pointer' }}>
-                                    <td><strong className="text-blue">{e.EmployeeID}</strong></td>
-                                    <td>{e.Department}</td>
-                                    <td>{e.JobTitle}</td>
-                                    <td>{e.Gender}</td>
-                                    <td>${(e.Salary / 1000).toFixed(0)}K</td>
-                                    <td>{e.TenureYears}y</td>
-                                    <td>{e.PerformanceRating}</td>
-                                    <td>
-                                        <span className={`badge ${e.AttritionFlag ? 'badge-high' : 'badge-low'}`}>
-                                            {e.AttritionFlag ? 'Left' : 'Active'}
-                                        </span>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            )}
-        </>
+        </div>
     );
 }

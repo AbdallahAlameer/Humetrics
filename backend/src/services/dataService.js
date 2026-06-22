@@ -56,6 +56,19 @@ function fillWithMedian(rows, col) {
 async function loadMain() {
     if (_cache.main) return _cache.main;
 
+    // Try reading from MongoDB first
+    try {
+        const { getDb } = await import('../db.js');
+        const db = getDb();
+        const dbRows = await db.collection('employees').find({}).project({_id: 0}).toArray();
+        if (dbRows && dbRows.length > 0) {
+            _cache.main = dbRows;
+            return dbRows;
+        }
+    } catch (err) {
+        console.error('[WARN] Failed to read employees from MongoDB, falling back to CSV:', err.message);
+    }
+
     const rows = await loadCsv(resolve(DATA_DIR, 'employee_ml_dataset_v3.csv'));
 
     // Coerce all numeric-looking columns
@@ -100,6 +113,19 @@ async function loadMain() {
 // ── IBM Attrition dataset ─────────────────────────────────────────
 async function loadIbm() {
     if (_cache.ibm) return _cache.ibm;
+
+    // Try reading from MongoDB first
+    try {
+        const { getDb } = await import('../db.js');
+        const db = getDb();
+        const dbRows = await db.collection('ibm_attrition').find({}).project({_id: 0}).toArray();
+        if (dbRows && dbRows.length > 0) {
+            _cache.ibm = dbRows;
+            return dbRows;
+        }
+    } catch (err) {
+        console.error('[WARN] Failed to read ibm_attrition from MongoDB, falling back to CSV:', err.message);
+    }
 
     const rows = await loadCsv(resolve(DATA_DIR, 'HR-Employee-Attrition.csv'));
 

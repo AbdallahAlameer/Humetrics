@@ -1,5 +1,8 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
+import { CurrencyProvider } from './context/CurrencyContext';
+import { PreferencesProvider, usePreferences } from './context/PreferencesContext';
 import Layout from './components/Layout';
 import Login from './pages/Login';
 import Overview from './pages/Overview';
@@ -8,6 +11,8 @@ import Recommendations from './pages/Recommendations';
 import Employees from './pages/Employees';
 import RiskAlerts from './pages/RiskAlerts';
 import DataUpload from './pages/DataUpload';
+import Settings from './pages/Settings';
+import Help from './pages/Help';
 
 function ProtectedRoute({ children }) {
   const { user } = useAuth();
@@ -23,9 +28,13 @@ function RoleProtectedRoute({ children, allowedRoles }) {
 
 function AppRoutes() {
   const { user } = useAuth();
+  const { landingPage } = usePreferences();
+  
+  const landingPath = landingPage === 'overview' ? '/' : `/${landingPage}`;
+
   return (
     <Routes>
-      <Route path="/login" element={user ? <Navigate to="/" replace /> : <Login />} />
+      <Route path="/login" element={user ? <Navigate to={landingPath} replace /> : <Login />} />
       <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
         <Route index element={<Overview />} />
         <Route path="employees" element={<RoleProtectedRoute allowedRoles={['hr', 'manager']}><Employees /></RoleProtectedRoute>} />
@@ -33,6 +42,8 @@ function AppRoutes() {
         <Route path="performance" element={<RoleProtectedRoute allowedRoles={['hr', 'manager']}><Performance /></RoleProtectedRoute>} />
         <Route path="risk-alerts" element={<RoleProtectedRoute allowedRoles={['hr', 'manager']}><RiskAlerts /></RoleProtectedRoute>} />
         <Route path="upload" element={<RoleProtectedRoute allowedRoles={['hr']}><DataUpload /></RoleProtectedRoute>} />
+        <Route path="settings" element={<Settings />} />
+        <Route path="help" element={<Help />} />
       </Route>
     </Routes>
   );
@@ -41,9 +52,15 @@ function AppRoutes() {
 export default function App() {
   return (
     <BrowserRouter>
-      <AuthProvider>
-        <AppRoutes />
-      </AuthProvider>
+      <ThemeProvider>
+        <CurrencyProvider>
+          <PreferencesProvider>
+            <AuthProvider>
+              <AppRoutes />
+            </AuthProvider>
+          </PreferencesProvider>
+        </CurrencyProvider>
+      </ThemeProvider>
     </BrowserRouter>
   );
 }
