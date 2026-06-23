@@ -6,6 +6,8 @@
 
 **Humetrics** is a cutting-edge HR Analytics and Workforce Management platform designed to transform raw human resources data into actionable, predictive intelligence. By integrating machine learning models with a robust Node.js backend and a beautiful, high-performance React frontend, Humetrics empowers HR professionals and business leaders to foresee attrition, detect behavioral risks, ensure pay equity, and strategically plan for workforce training and promotions.
 
+**🌟 Live Demo:** [https://humetrics.vercel.app/](https://humetrics.vercel.app/)
+
 Stop reacting to HR challenges. Start predicting them.
 
 ---
@@ -56,7 +58,7 @@ graph TD
 ```text
 humetrics/
 ├── backend/                  # Node.js + Express API server
-│   ├── src/                  # Controllers, routes, and services
+│   ├── src/                  # Routes, middleware, and services
 │   ├── package.json          # Backend dependencies
 │   └── index.js              # Entry point for the server
 ├── frontend/                 # React + Vite application
@@ -64,7 +66,7 @@ humetrics/
 │   ├── package.json          # Frontend dependencies
 │   └── index.html            # App entry HTML
 ├── notebooks/                # Machine Learning workflows
-│   ├── promotion.ipynb
+│   ├── Promotion.ipynb
 │   ├── attrition_drivers.ipynb
 │   ├── behavioral_risk.ipynb
 │   ├── pay_equity.ipynb
@@ -89,6 +91,7 @@ humetrics/
 *   **Runtime:** Node.js
 *   **Framework:** Express.js
 *   **Security:** JSON Web Tokens (JWT), bcrypt
+*   **AI Integration:** OpenAI API
 
 **Machine Learning & Data Science**
 *   **Language:** Python 3
@@ -101,7 +104,7 @@ humetrics/
 
 The `/notebooks` directory houses the core intelligence of Humetrics. Each notebook handles a specific predictive or analytical HR task:
 
-*   📈 **`promotion.ipynb`**: Analyzes performance ratings, tenure, and training history to identify high-potential employees ready for leadership roles.
+*   📈 **`Promotion.ipynb`**: Analyzes performance ratings, tenure, and training history to identify high-potential employees ready for leadership roles.
 *   🚪 **`attrition_drivers.ipynb`**: Predicts churn probabilities and isolates the primary factors (e.g., pay stagnation, commute, manager relationship) driving turnover.
 *   ⚠️ **`behavioral_risk.ipynb`**: Evaluates behavioral metadata and engagement metrics to flag burnout risk or disengagement patterns.
 *   💵 **`pay_equity.ipynb`**: Runs statistical modeling across demographic groups to ensure compliance and fairness in compensation.
@@ -113,7 +116,7 @@ The `/notebooks` directory houses the core intelligence of Humetrics. Each noteb
 
 ## 🗄️ Database Design
 
-The system relies on a relational data model to ensure data integrity and complex querying for analytics. Key entities include:
+The system relies on a NoSQL document database (MongoDB) for flexible data storage and fast querying. Key entities include:
 
 *   **Users & Roles**: Manages authentication credentials and RBAC mapping.
 *   **Employee Records**: Core HR data containing demographics, salaries, performance ratings, and tenure.
@@ -169,10 +172,11 @@ cd humetrics
 ```
 
 ### 2. Set Up the Backend
+Ensure you have MongoDB running locally on `127.0.0.1:27017` or update your backend `.env` file accordingly.
 ```bash
 cd backend
 npm install
-# Start the backend server (typically runs on port 3000 or 5000)
+# Start the backend server (typically runs on port 8000)
 npm run start
 ```
 
@@ -210,7 +214,7 @@ jupyter notebook
 ## 🛣️ Future Enhancements
 
 *   [ ] **Real-time Pipeline Integration**: Connect the Jupyter outputs to real-time event streams (e.g., Apache Kafka) for live updates.
-*   [ ] **Generative AI Chatbot**: Implement an LLM-based assistant in the frontend so managers can chat directly with their workforce data.
+*   [ ] **Expand Generative AI Chatbot**: Further enhance the existing OpenAI integration to allow managers to chat directly with their workforce data in real-time.
 *   [ ] **Advanced Bias Mitigation**: Add adversarial debiasing layers to the ML models to ensure 100% fair AI inferences.
 *   [ ] **Mobile Optimization**: Build a React Native counterpart for on-the-go managers.
 
