@@ -2,11 +2,9 @@
 
 [![React](https://img.shields.io/badge/Frontend-React%20%2B%20Vite-blue?style=for-the-badge&logo=react)](https://reactjs.org/)
 [![Node.js](https://img.shields.io/badge/Backend-Node.js%20%2B%20Express-success?style=for-the-badge&logo=node.js)](https://nodejs.org/)
-[![Machine Learning](https://img.shields.io/badge/Machine%20Learning-Python%20%2B%20Scikit--Learn-yellow?style=for-the-badge&logo=python)](https://python.org/)
+[![Machine Learning](https://img.shields.io/badge/Machine%20Learning-Python%20%2B%20FastAPI-yellow?style=for-the-badge&logo=python)](https://fastapi.tiangolo.com/)
 
-**Humetrics** is a cutting-edge HR Analytics and Workforce Management platform designed to transform raw human resources data into actionable, predictive intelligence. By integrating machine learning models with a robust Node.js backend and a beautiful, high-performance React frontend, Humetrics empowers HR professionals and business leaders to foresee attrition, detect behavioral risks, ensure pay equity, and strategically plan for workforce training and promotions.
-
-**🌟 Live Demo:** [https://humetrics.vercel.app/](https://humetrics.vercel.app/)
+**Humetrics** is a cutting-edge HR Analytics and Workforce Management platform designed to transform raw human resources data into actionable, predictive intelligence. By integrating real Scikit-learn machine learning models via a dedicated Python microservice, a robust Node.js backend proxy, and a beautiful, high-performance React frontend, Humetrics empowers HR professionals and business leaders to foresee attrition, detect behavioral risks, ensure pay equity, and strategically plan for workforce training and promotions.
 
 Stop reacting to HR challenges. Start predicting them.
 
@@ -15,22 +13,21 @@ Stop reacting to HR challenges. Start predicting them.
 ## ✨ Key Features
 
 - 🔮 **Predictive Attrition & Retention**: Identify which employees are most likely to leave and understand the underlying drivers.
-- ⚖️ **Pay Equity Analysis**: Automatically detect systemic compensation imbalances across gender, roles, and departments to ensure fair pay.
-- 🎯 **Performance Forecasting**: Leverage historical data to predict employee success trajectories and optimize role matching.
+- ⚖️ **Pay Equity Analysis**: Automatically detect systemic compensation imbalances across gender, roles, and departments to ensure fair pay using Gradient Boosting Regressors.
+- 🎯 **Performance Forecasting**: Leverage historical data to predict employee success trajectories and optimize role matching using Random Forest models.
 - ⚠️ **Behavioral Risk Detection**: Flag potential compliance or cultural risks before they escalate.
-- 📚 **Training Impact Optimization**: Measure the ROI of learning programs and identify where training interventions will be most effective.
 - 🧠 **Smart Recommendation Engine**: Actionable AI-generated steps for managers regarding compensation reviews, career discussions, and interventions.
-- 🔐 **Role-Based Access Control (RBAC)**: Secure access tailoring the dashboard views and data depending on whether the user is an HR Executive or a Department Manager.
+- ⚙️ **Resilient Fallback Architecture**: The system gracefully falls back to explicit JavaScript heuristics if the Python ML microservice is ever unavailable, ensuring uninterrupted service.
 
 ---
 
 ## 🏗️ System Architecture
 
-Humetrics is built on a modern, decoupled three-tier architecture:
+Humetrics is built on a resilient, decoupled microservice architecture:
 
-1. **Frontend (Presentation Layer)**: A highly interactive UI built with React and Vite, fetching data securely from the backend.
-2. **Backend (Application Layer)**: A Node.js/Express server that acts as the central hub. It orchestrates API requests, enforces RBAC, and serves data from the underlying database or interfaces with the generated ML insights.
-3. **Machine Learning (Analytics Layer)**: A suite of Jupyter notebooks where predictive models are trained, evaluated, and outputted.
+1. **Frontend (Presentation Layer)**: A highly interactive UI built with React and Vite. It visually indicates whether predictions are powered by the live ML models ("🧠 ML Model Active") or the offline fallback logic ("⚙️ Heuristic Fallback Active").
+2. **Backend Proxy (Application Layer)**: A Node.js/Express server that acts as the central hub. It orchestrates API requests, enforces RBAC, and proxies predictive queries to the ML Service. If the ML Service is down, it catches the error and executes fallback JavaScript heuristics.
+3. **ML Microservice (Intelligence Layer)**: A Python FastAPI application that loads trained Scikit-learn models (`.pkl` artifacts) into memory to serve real-time predictions.
 
 ```mermaid
 graph TD
@@ -38,16 +35,15 @@ graph TD
         User([Manager / HR Exec]) -->|Access Dashboard| Frontend[React + Vite App]
     end
 
-    subgraph Server [Backend Architecture]
-        Frontend -->|REST API| API[Node.js + Express API]
-        API -->|Auth & RBAC| AuthMiddleware[Authentication Service]
-        API -->|Read / Write| Database[(Core HR Database)]
+    subgraph Server [Node.js Backend]
+        Frontend -->|REST API| API[Express API]
+        API -->|Read / Write| Database[(Core HR Database / CSVs)]
     end
 
-    subgraph Intelligence [Machine Learning Layer]
-        Notebooks[Jupyter Notebooks] -->|Train & Generate Insights| Models((Scikit-Learn Models))
-        Models -.->|Export Metrics/Predictions| Database
-        Notebooks -->|Fetch Raw Data| RawData[(Raw HR Data files)]
+    subgraph Intelligence [Python ML Service]
+        API -- Proxy Requests --> FastAPI[FastAPI Server]
+        FastAPI -.->|Serve Predictions| Models((Scikit-Learn .pkl Models))
+        API -.->|Fallback if Offline| Heuristics[JS Fallback Logic]
     end
 ```
 
@@ -57,24 +53,20 @@ graph TD
 
 ```text
 humetrics/
-├── backend/                  # Node.js + Express API server
-│   ├── src/                  # Routes, middleware, and services
+├── backend/                  # Node.js + Express API server (Proxy & Fallback)
+│   ├── src/                  # Routes, middleware, and services (e.g. mlService.js)
 │   ├── package.json          # Backend dependencies
-│   └── index.js              # Entry point for the server
+│   └── index.js              # Entry point for the Node server
 ├── frontend/                 # React + Vite application
-│   ├── src/                  # Components, Contexts, Pages, API clients
-│   ├── package.json          # Frontend dependencies
-│   └── index.html            # App entry HTML
-├── notebooks/                # Machine Learning workflows
-│   ├── Promotion.ipynb
-│   ├── attrition_drivers.ipynb
-│   ├── behavioral_risk.ipynb
-│   ├── pay_equity.ipynb
-│   ├── performance_prediction.ipynb
-│   ├── recommendation_engine.ipynb
-│   └── training_impact.ipynb
-├── data/                     # Raw & processed CSVs and JSONs for ML
-└── README.md                 # Project documentation
+│   ├── src/                  # Components, Pages, UI elements
+│   └── package.json          # Frontend dependencies
+├── ml_service/               # Python FastAPI Machine Learning Microservice
+│   ├── models/               # Exported Scikit-learn models (.pkl)
+│   ├── main.py               # FastAPI entry point
+│   ├── train_models.py       # Script to train and export ML models
+│   └── requirements.txt      # Python dependencies
+├── notebooks/                # Jupyter Notebooks for data exploration & prototyping
+└── data/                     # Raw & processed CSV datasets
 ```
 
 ---
@@ -83,140 +75,68 @@ humetrics/
 
 **Frontend**
 *   **Framework:** React (Vite)
-*   **Language:** TypeScript / JavaScript (JSX)
-*   **Styling:** Tailwind CSS, Lucide Icons, Recharts
-*   **State Management:** React Context API
+*   **Language:** JavaScript (JSX)
+*   **Styling:** Tailwind CSS, Recharts
 
-**Backend**
+**Backend (Node.js)**
 *   **Runtime:** Node.js
 *   **Framework:** Express.js
-*   **Security:** JSON Web Tokens (JWT), bcrypt
-*   **AI Integration:** OpenAI API
+*   **Architecture:** Proxy with heuristic fallback
 
-**Machine Learning & Data Science**
-*   **Language:** Python 3
-*   **Environment:** Jupyter Notebooks
-*   **Libraries:** Pandas, NumPy, Scikit-learn, Matplotlib, Seaborn
-
----
-
-## 🔬 Machine Learning Models
-
-The `/notebooks` directory houses the core intelligence of Humetrics. Each notebook handles a specific predictive or analytical HR task:
-
-*   📈 **`Promotion.ipynb`**: Analyzes performance ratings, tenure, and training history to identify high-potential employees ready for leadership roles.
-*   🚪 **`attrition_drivers.ipynb`**: Predicts churn probabilities and isolates the primary factors (e.g., pay stagnation, commute, manager relationship) driving turnover.
-*   ⚠️ **`behavioral_risk.ipynb`**: Evaluates behavioral metadata and engagement metrics to flag burnout risk or disengagement patterns.
-*   💵 **`pay_equity.ipynb`**: Runs statistical modeling across demographic groups to ensure compliance and fairness in compensation.
-*   🌟 **`performance_prediction.ipynb`**: Forecasts future employee performance based on historical trends, engagement scores, and project success rates.
-*   🤖 **`recommendation_engine.ipynb`**: The synthesis layer—processes outputs from other models to generate concrete action plans (e.g., "Schedule Compensation Review").
-*   🎓 **`training_impact.ipynb`**: Correlates past training attendance with productivity spikes to optimize future L&D budgets.
-
----
-
-## 🗄️ Database Design
-
-The system relies on a NoSQL document database (MongoDB) for flexible data storage and fast querying. Key entities include:
-
-*   **Users & Roles**: Manages authentication credentials and RBAC mapping.
-*   **Employee Records**: Core HR data containing demographics, salaries, performance ratings, and tenure.
-*   **Departments & Roles**: Organizational hierarchy and job classifications.
-*   **Machine Learning Outputs**: Tables storing cached predictions (e.g., Burnout Risk Scores, Promotion Readiness) injected by the Jupyter notebooks.
-*   **System Logs & Alerts**: Audit trails and automatically generated risk alerts for managers.
-
----
-
-## 🔌 API Documentation
-
-The Node.js backend exposes a RESTful API to serve the frontend. Standardized JSON responses are used across all endpoints. 
-
-**Key Endpoints:**
-*   `POST /api/auth/login`: Authenticate users and return a JWT.
-*   `GET /api/dashboard/overview`: Fetch high-level KPIs (Total Employees, Average Salary, Turnover Rate).
-*   `GET /api/employees`: Retrieve a paginated list of employees with sorting and filtering.
-*   `GET /api/predictions/risk`: Fetch the machine learning risk profiles for active employees.
-*   `POST /api/upload`: Endpoint for HR to securely upload new batches of HR data CSVs.
-
-*(A fully interactive Swagger/OpenAPI documentation will be available at `/api-docs` when running the backend in development mode).*
-
----
-
-## 👥 User Roles & Permissions
-
-Humetrics implements strict **Role-Based Access Control (RBAC)** to ensure sensitive HR data is protected:
-
-*   **HR Executive / Admin**: Has global read/write access. Can view company-wide analytics, upload new data, and manage user accounts.
-*   **Department Manager**: Has read-only access restricted strictly to employees within their own department. Cannot view system-wide pay equity or data from other managers.
-
----
-
-## 🛡️ Security
-
-Data privacy is paramount in HR analytics. Our security measures include:
-
-*   **Authentication**: Stateless authentication using secure JSON Web Tokens (JWT).
-*   **Password Hashing**: Passwords are never stored in plaintext (secured via `bcrypt`).
-*   **Data Masking**: PII (Personally Identifiable Information) can be anonymized before being fed into the ML pipelines.
-*   **Secure Routing**: Frontend routes and backend endpoints strictly enforce authorization checks before rendering UI or fulfilling requests.
+**Machine Learning & Data Science (Python)**
+*   **Server Framework:** FastAPI / Uvicorn
+*   **Machine Learning:** Scikit-learn (RandomForest, GradientBoosting)
+*   **Data Processing:** Pandas, NumPy
 
 ---
 
 ## 🚀 Getting Started
 
-Follow these steps to set up Humetrics locally on your machine.
+Follow these steps to set up the complete Humetrics stack locally on your machine. You will need to run three separate servers.
 
-### 1. Clone the Repository
+### 1. Set Up the Python ML Service (Terminal 1)
+This service trains and serves the actual machine learning models.
 ```bash
-git clone https://github.com/your-username/humetrics.git
-cd humetrics
-```
+cd ml_service
+# (Optional but recommended: Create a virtual environment)
+# python -m venv venv
+# source venv/bin/activate  # Or venv\Scripts\activate on Windows
 
-### 2. Set Up the Backend
-Ensure you have MongoDB running locally on `127.0.0.1:27017` or update your backend `.env` file accordingly.
+# Install Python dependencies
+python -m pip install -r requirements.txt
+
+# Start the FastAPI server (runs on port 8001)
+python -m uvicorn main:app --port 8001
+```
+*(Note: On first boot, the server will automatically train and generate the `.pkl` models if they do not exist.)*
+
+### 2. Set Up the Node.js Backend (Terminal 2)
+This service handles standard requests and proxies ML calls to the Python service.
 ```bash
 cd backend
 npm install
-# Start the backend server (typically runs on port 8000)
-npm run start
-```
 
-### 3. Set Up the Frontend
-Open a new terminal window:
+# Start the backend server (runs on port 8000)
+npm run dev
+```
+*(You should see an "[OK] Python ML Service is online" log message indicating successful connection to the FastAPI server.)*
+
+### 3. Set Up the React Frontend (Terminal 3)
 ```bash
 cd frontend
 npm install
+
 # Start the Vite development server
 npm run dev
 ```
-Navigate to the `localhost` URL provided by Vite in your browser to view the application.
 
-### 4. Explore the ML Notebooks
-To run the analytics workflows, you need Python and Jupyter installed. We recommend using a virtual environment.
-```bash
-cd notebooks
-python -m venv venv
-
-# Activate the virtual environment:
-# On Windows:
-venv\Scripts\activate
-# On macOS/Linux:
-source venv/bin/activate
-
-# Install requirements (if requirements.txt exists, otherwise install manually)
-pip install jupyter pandas numpy scikit-learn matplotlib seaborn
-
-# Launch Jupyter Notebook
-jupyter notebook
-```
+Navigate to the `localhost` URL provided by Vite in your browser. When viewing the **Performance** or **Pay Equity** pages, you should now see the green **"🧠 ML Model Active"** badge, confirming the end-to-end AI integration!
 
 ---
 
-## 🛣️ Future Enhancements
+## 🛠️ Fallback Testing
 
-*   [ ] **Real-time Pipeline Integration**: Connect the Jupyter outputs to real-time event streams (e.g., Apache Kafka) for live updates.
-*   [ ] **Expand Generative AI Chatbot**: Further enhance the existing OpenAI integration to allow managers to chat directly with their workforce data in real-time.
-*   [ ] **Advanced Bias Mitigation**: Add adversarial debiasing layers to the ML models to ensure 100% fair AI inferences.
-*   [ ] **Mobile Optimization**: Build a React Native counterpart for on-the-go managers.
+To test the system's resilience, simply stop the Python ML Service (Terminal 1) by pressing `Ctrl+C`. Refresh your browser, and you will see the UI gracefully switch to the orange **"⚙️ Heuristic Fallback Active"** badge without any downtime or disruption.
 
 ---
 *Developed with ❤️ to empower organizations with ethical, data-driven workforce intelligence.*

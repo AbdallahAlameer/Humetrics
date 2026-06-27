@@ -64,6 +64,18 @@ async function start() {
         // Preload CSV datasets into memory
         await preload();
 
+        // Check ML service
+        try {
+            const mlRes = await fetch('http://localhost:8001/health');
+            if (mlRes.ok) {
+                console.log('[OK] Python ML Service is online');
+            } else {
+                console.log('[WARN] Python ML Service returned non-ok status');
+            }
+        } catch (e) {
+            console.log('[WARN] Python ML Service is unreachable. Will fallback to JS heuristics.');
+        }
+
         app.listen(PORT, () => {
             console.log(`[OK] HR Analytics API listening on http://localhost:${PORT}`);
         });

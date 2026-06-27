@@ -100,7 +100,7 @@ function linearRegression(Xs, ys) {
 // ═══════════════════════════════════════════════════════════════
 //  2. PERFORMANCE PREDICTION
 // ═══════════════════════════════════════════════════════════════
-export async function predictPerformance(dept = null) {
+async function predictPerformanceJS(dept = null) {
     const df = await getMainDf(dept);
 
     // Use AvgOverallScore as-is-basis for bands (no sklearn, just direct scoring)
@@ -169,7 +169,21 @@ export async function predictPerformance(dept = null) {
         },
         department_summary: departmentSummary,
         model_metrics: { r2: 0.7097, mae: 0.3606, rmse: 0.4984, cv_r2: 0.7092 },
+        source: 'js_fallback'
     };
+}
+
+export async function predictPerformance(dept = null) {
+    try {
+        const url = new URL('http://localhost:8001/predict/performance');
+        if (dept) url.searchParams.append('dept', dept);
+        const res = await fetch(url.toString());
+        if (!res.ok) throw new Error('ML service failed');
+        return await res.json();
+    } catch (e) {
+        console.warn('Python ML service unreachable, falling back to JS heuristic:', e.message);
+        return await predictPerformanceJS(dept);
+    }
 }
 
 
@@ -255,7 +269,7 @@ export async function computeBehavioralRisk(dept = null) {
 // ═══════════════════════════════════════════════════════════════
 //  4. PROMOTION PREDICTION  (rule-based, mirrors notebook target)
 // ═══════════════════════════════════════════════════════════════
-export async function predictPromotion(dept = null) {
+async function predictPromotionJS(dept = null) {
     const df = await getIbmDf(dept);
 
     // Same rule-based target the notebook uses for PromotionReady
@@ -350,7 +364,21 @@ export async function predictPromotion(dept = null) {
         department_summary: departmentSummary,
         role_summary: roleSummary,
         model_metrics: { roc_auc: 0.9716, pr_auc: 0.4726, accuracy: 0.95, threshold: 0.3, smote_used: true },
+        source: 'js_fallback'
     };
+}
+
+export async function predictPromotion(dept = null) {
+    try {
+        const url = new URL('http://localhost:8001/predict/promotion');
+        if (dept) url.searchParams.append('dept', dept);
+        const res = await fetch(url.toString());
+        if (!res.ok) throw new Error('ML service failed');
+        return await res.json();
+    } catch (e) {
+        console.warn('Python ML service unreachable, falling back to JS heuristic:', e.message);
+        return await predictPromotionJS(dept);
+    }
 }
 
 
@@ -447,7 +475,7 @@ export async function generateRecommendations(dept = null) {
 // ═══════════════════════════════════════════════════════════════
 //  6. PAY EQUITY ANALYSIS
 // ═══════════════════════════════════════════════════════════════
-export async function computePayEquity(dept = null) {
+async function computePayEquityJS(dept = null) {
     const df = await getIbmDf(dept);
 
     const male = df.filter(r => r['Gender'] === 'Male');
@@ -586,7 +614,21 @@ export async function computePayEquity(dept = null) {
         department_equity: departmentEquity,
         top_underpaid: topUnderpaid,
         by_job_level: byJobLevel,
+        source: 'js_fallback'
     };
+}
+
+export async function computePayEquity(dept = null) {
+    try {
+        const url = new URL('http://localhost:8001/predict/pay-equity');
+        if (dept) url.searchParams.append('dept', dept);
+        const res = await fetch(url.toString());
+        if (!res.ok) throw new Error('ML service failed');
+        return await res.json();
+    } catch (e) {
+        console.warn('Python ML service unreachable, falling back to JS heuristic:', e.message);
+        return await computePayEquityJS(dept);
+    }
 }
 
 

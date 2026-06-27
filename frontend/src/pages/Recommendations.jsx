@@ -157,6 +157,11 @@ function PayEquityTab() {
 
     return (
         <div className="flex flex-col gap-8 rise">
+            <div className="flex justify-end -mb-4">
+                <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-mono border ${data.source === 'ml_model' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-orange-500/10 text-orange-400 border-orange-500/20'}`}>
+                    {data.source === 'ml_model' ? '🧠 ML Model Active' : '⚙️ Heuristic Fallback Active'}
+                </span>
+            </div>
             <section className="grid grid-cols-1 md:grid-cols-3 gap-6 border-b border-rule pb-6">
                 <div 
                     className="relative px-6 py-8 rounded-2xl shadow-lg border border-zinc-800/50 group"
