@@ -86,8 +86,9 @@ humetrics/
 
 **Machine Learning & Data Science (Python)**
 *   **Server Framework:** FastAPI / Uvicorn
-*   **Machine Learning:** Scikit-learn (RandomForest, GradientBoosting)
-*   **Data Processing:** Pandas, NumPy
+*   **Machine Learning:** Scikit-learn (RandomForest, GradientBoosting), imbalanced-learn
+*   **Explainability:** SHAP (SHapley Additive exPlanations) for model transparency & driver analysis
+*   **Data Processing:** Pandas, NumPy, Joblib
 
 ---
 
