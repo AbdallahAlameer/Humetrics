@@ -111,10 +111,11 @@ async function predictPerformanceJS(dept = null) {
         return 'At Risk';
     };
 
-    const predictions = df.slice(0, 500).map(r => ({
+    const predictions = df.map(r => ({
         EmployeeID: r['EmployeeID'],
         Department: r['Department'],
         JobTitle: r['JobTitle'],
+        PerformanceRating: r['PerformanceRating'],
         AvgOverallScore: r['AvgOverallScore'],
         PredictedScore: round(r['AvgOverallScore'], 2),
         PerformanceBand: assignBand(r['AvgOverallScore']),
@@ -578,6 +579,17 @@ async function computePayEquityJS(dept = null) {
             PayGapPct: r.PayGapPct,
         }));
 
+    const allPredictions = enriched.map(r => ({
+        EmployeeNumber: r['EmployeeNumber'],
+        Department: r['Department'],
+        JobRole: r['JobRole'],
+        Gender: r['Gender'],
+        JobLevel: r['JobLevel'],
+        MonthlyIncome: r['MonthlyIncome'],
+        PredictedSalary: r.PredictedSalary,
+        PayGapPct: r.PayGapPct,
+    }));
+
     // Salary by JobLevel x Gender (pivot)
     const levelGenderMap = {};
     for (const r of df) {
@@ -613,6 +625,7 @@ async function computePayEquityJS(dept = null) {
         gender_equity: genderEquity,
         department_equity: departmentEquity,
         top_underpaid: topUnderpaid,
+        all_predictions: allPredictions,
         by_job_level: byJobLevel,
         source: 'js_fallback'
     };

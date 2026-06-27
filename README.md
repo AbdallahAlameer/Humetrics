@@ -14,10 +14,11 @@ Stop reacting to HR challenges. Start predicting them.
 
 - 🔮 **Predictive Attrition & Retention**: Identify which employees are most likely to leave and understand the underlying drivers.
 - ⚖️ **Pay Equity Analysis**: Automatically detect systemic compensation imbalances across gender, roles, and departments to ensure fair pay using Gradient Boosting Regressors.
-- 🎯 **Performance Forecasting**: Leverage historical data to predict employee success trajectories and optimize role matching using Random Forest models.
+- 🎯 **Performance Forecasting**: Leverage historical data to predict employee success trajectories and optimize role matching using Random Forest models, strictly based on true behavioral drivers (free of data leakage).
 - ⚠️ **Behavioral Risk Detection**: Flag potential compliance or cultural risks before they escalate.
 - 🧠 **Smart Recommendation Engine**: Actionable AI-generated steps for managers regarding compensation reviews, career discussions, and interventions.
 - ⚙️ **Resilient Fallback Architecture**: The system gracefully falls back to explicit JavaScript heuristics if the Python ML microservice is ever unavailable, ensuring uninterrupted service.
+- 📊 **Deep-Dive Searchable Data Tables**: Compare raw historical metrics against live ML predictions side-by-side using fully searchable data grids.
 
 ---
 

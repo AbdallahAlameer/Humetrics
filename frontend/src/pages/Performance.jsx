@@ -166,6 +166,7 @@ function CurrentPerformanceTab() {
 function PredictedPerformanceTab() {
     const [performance, setPerformance] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [searchTerm, setSearchTerm] = useState('');
 
     useEffect(() => {
         API.get('/predictions/performance')
@@ -272,6 +273,49 @@ function PredictedPerformanceTab() {
                                     <td className="py-3 px-4">
                                         <span className={`font-numeric text-[10px] px-2 py-0.5 border rounded-sm ${d.AtRiskPct > 30 ? 'bg-destructive/10 text-destructive border-destructive/30' : d.AtRiskPct > 15 ? 'bg-warning/10 text-warning-foreground border-warning/30' : 'bg-success/10 text-success border-success/30'}`}>
                                             {d.AtRiskPct}%
+                                        </span>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section className="border border-rule bg-card overflow-hidden mt-8">
+                <div className="p-4 border-b border-rule bg-paper/50 flex flex-wrap items-center justify-between gap-4">
+                    <h3 className="font-display text-xl text-ink">Individual Predictions</h3>
+                    <input 
+                        type="text" 
+                        placeholder="Search Employee ID..." 
+                        className="bg-background border border-rule rounded-sm px-3 py-1.5 text-sm w-64 focus:outline-none focus:border-primary text-ink"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                </div>
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left text-sm border-collapse">
+                        <thead>
+                            <tr className="border-b border-rule bg-paper/20">
+                                <th className="py-3 px-4 font-mono text-[10px] uppercase tracking-wider text-muted-foreground whitespace-nowrap">Employee ID</th>
+                                <th className="py-3 px-4 font-mono text-[10px] uppercase tracking-wider text-muted-foreground whitespace-nowrap">Department</th>
+                                <th className="py-3 px-4 font-mono text-[10px] uppercase tracking-wider text-muted-foreground whitespace-nowrap">Job Title</th>
+                                <th className="py-3 px-4 font-mono text-[10px] uppercase tracking-wider text-muted-foreground whitespace-nowrap text-center">Historical Rating</th>
+                                <th className="py-3 px-4 font-mono text-[10px] uppercase tracking-wider text-primary whitespace-nowrap text-center">ML Predicted Score</th>
+                                <th className="py-3 px-4 font-mono text-[10px] uppercase tracking-wider text-muted-foreground whitespace-nowrap">Predicted Band</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-rule/50">
+                            {performance.predictions?.filter(p => p.EmployeeID.toLowerCase().includes(searchTerm.toLowerCase())).slice(0, 100).map((p, i) => (
+                                <tr key={i} className="hover:bg-accent/10 transition-colors">
+                                    <td className="py-3 px-4 font-medium text-ink">{p.EmployeeID}</td>
+                                    <td className="py-3 px-4 text-muted-foreground">{p.Department}</td>
+                                    <td className="py-3 px-4 text-muted-foreground truncate max-w-[150px]">{p.JobTitle}</td>
+                                    <td className="py-3 px-4 font-numeric tabular-nums text-center text-muted-foreground">{p.PerformanceRating}</td>
+                                    <td className="py-3 px-4 font-numeric tabular-nums text-center text-primary font-medium">{p.PredictedScore?.toFixed(2)}</td>
+                                    <td className="py-3 px-4">
+                                        <span className={`font-mono text-[10px] px-2 py-0.5 border rounded-sm ${p.PerformanceBand === 'At Risk' ? 'bg-destructive/10 text-destructive border-destructive/30' : p.PerformanceBand === 'Solid Performer' ? 'bg-warning/10 text-warning-foreground border-warning/30' : 'bg-success/10 text-success border-success/30'}`}>
+                                            {p.PerformanceBand}
                                         </span>
                                     </td>
                                 </tr>

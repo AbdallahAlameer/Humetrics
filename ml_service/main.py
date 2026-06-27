@@ -68,7 +68,7 @@ def predict_performance(dept: str = None):
         
     df_pred["PerformanceBand"] = df_pred["PredictedScore"].apply(assign_band)
     
-    predictions = df_pred.head(500)[["EmployeeID", "Department", "JobTitle", "AvgOverallScore", "PredictedScore", "PerformanceBand"]].to_dict('records')
+    predictions = df_pred[["EmployeeID", "Department", "JobTitle", "PerformanceRating", "AvgOverallScore", "PredictedScore", "PerformanceBand"]].to_dict('records')
     for p in predictions:
         p["PredictedScore"] = round(p["PredictedScore"], 2)
         
@@ -257,6 +257,13 @@ def predict_pay_equity(dept: str = None):
         r["PredictedSalary"] = round(r["PredictedSalary"])
         r["PayGapPct"] = round(r["PayGapPct"], 1)
         
+    all_predictions = df_eq[
+        ["EmployeeNumber", "Department", "JobRole", "Gender", "JobLevel", "MonthlyIncome", "PredictedSalary", "PayGapPct"]
+    ].to_dict('records')
+    for r in all_predictions:
+        r["PredictedSalary"] = round(r["PredictedSalary"])
+        r["PayGapPct"] = round(r["PayGapPct"], 1)
+        
     by_job_level = []
     for lv, grp in df_eq.groupby("JobLevel"):
         m_grp = grp[grp["Gender"] == "Male"]
@@ -294,6 +301,7 @@ def predict_pay_equity(dept: str = None):
         "gender_equity": gender_equity,
         "department_equity": dept_equity,
         "top_underpaid": top_underpaid,
+        "all_predictions": all_predictions,
         "by_job_level": by_job_level,
         "source": "ml_model"
     }

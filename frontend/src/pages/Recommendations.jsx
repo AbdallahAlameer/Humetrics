@@ -131,6 +131,7 @@ function ActionTab() {
 function PayEquityTab() {
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [searchTerm, setSearchTerm] = useState('');
     const { formatCurrency } = useCurrency();
 
     useEffect(() => {
@@ -302,6 +303,49 @@ function PayEquityTab() {
                     </div>
                 </section>
             )}
+
+            <section className="border border-rule bg-card overflow-hidden mt-8">
+                <div className="p-4 border-b border-rule bg-paper/50 flex flex-wrap items-center justify-between gap-4">
+                    <h3 className="font-display text-xl text-ink">Individual Predictions</h3>
+                    <input 
+                        type="text" 
+                        placeholder="Search Employee ID..." 
+                        className="bg-background border border-rule rounded-sm px-3 py-1.5 text-sm w-64 focus:outline-none focus:border-primary text-ink"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                </div>
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left text-sm border-collapse">
+                        <thead>
+                            <tr className="border-b border-rule bg-paper/20">
+                                <th className="py-3 px-4 font-mono text-[10px] uppercase tracking-wider text-muted-foreground whitespace-nowrap">Employee ID</th>
+                                <th className="py-3 px-4 font-mono text-[10px] uppercase tracking-wider text-muted-foreground whitespace-nowrap">Department</th>
+                                <th className="py-3 px-4 font-mono text-[10px] uppercase tracking-wider text-muted-foreground whitespace-nowrap">Job Title</th>
+                                <th className="py-3 px-4 font-mono text-[10px] uppercase tracking-wider text-muted-foreground whitespace-nowrap text-right">Actual Salary</th>
+                                <th className="py-3 px-4 font-mono text-[10px] uppercase tracking-wider text-primary whitespace-nowrap text-right">ML Predicted Salary</th>
+                                <th className="py-3 px-4 font-mono text-[10px] uppercase tracking-wider text-muted-foreground whitespace-nowrap text-right">Pay Gap %</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-rule/50">
+                            {data.all_predictions?.filter(p => String(p.EmployeeNumber).toLowerCase().includes(searchTerm.toLowerCase())).slice(0, 100).map((p, i) => (
+                                <tr key={i} className="hover:bg-accent/10 transition-colors">
+                                    <td className="py-3 px-4 font-medium text-ink">{p.EmployeeNumber}</td>
+                                    <td className="py-3 px-4 text-muted-foreground">{p.Department}</td>
+                                    <td className="py-3 px-4 text-muted-foreground truncate max-w-[150px]">{p.JobRole}</td>
+                                    <td className="py-3 px-4 font-numeric tabular-nums text-right text-muted-foreground">{formatCurrency(p.MonthlyIncome)}</td>
+                                    <td className="py-3 px-4 font-numeric tabular-nums text-right text-primary font-medium">{formatCurrency(p.PredictedSalary)}</td>
+                                    <td className="py-3 px-4 text-right">
+                                        <span className={`font-numeric text-[10px] px-2 py-0.5 border rounded-sm ${p.PayGapPct <= -15 ? 'bg-destructive/10 text-destructive border-destructive/30' : p.PayGapPct >= 15 ? 'bg-warning/10 text-warning-foreground border-warning/30' : 'bg-success/10 text-success border-success/30'}`}>
+                                            {p.PayGapPct > 0 ? '+' : ''}{p.PayGapPct}%
+                                        </span>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
         </div>
     );
 }
