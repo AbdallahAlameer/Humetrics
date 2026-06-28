@@ -26,22 +26,23 @@ Stop reacting to HR challenges. Start predicting them.
 
 Humetrics is built on a resilient, decoupled microservice architecture:
 
-1. **Frontend (Presentation Layer)**: A highly interactive UI built with React and Vite. It visually indicates whether predictions are powered by the live ML models ("🧠 ML Model Active") or the offline fallback logic ("⚙️ Heuristic Fallback Active").
-2. **Backend Proxy (Application Layer)**: A Node.js/Express server that acts as the central hub. It orchestrates API requests, enforces RBAC, and proxies predictive queries to the ML Service. If the ML Service is down, it catches the error and executes fallback JavaScript heuristics.
-3. **ML Microservice (Intelligence Layer)**: A Python FastAPI application that loads trained Scikit-learn models (`.pkl` artifacts) into memory to serve real-time predictions.
+1. **Presentation Layer**: A highly interactive UI built with React + Vite. It visually indicates whether predictions are powered by the live ML models ("🧠 ML Model Active") or the offline fallback logic ("⚙️ Heuristic Fallback Active").
+2. **Application Layer**: A Node.js + Express server that acts as the central hub. It orchestrates Authentication, RBAC, REST API, Business Logic, Proxy to the ML Service, and executes Fallback Logic.
+3. **Intelligence (AI) Layer**: A Python FastAPI application that loads trained Scikit-learn models (`.pkl` artifacts) into memory to serve real-time predictions with SHAP explainability.
+4. **Data Layer**: MongoDB database storing HR datasets, Users, Predictions, and Audit logs.
 
 ```mermaid
 graph TD
-    subgraph Client [Client Side]
+    subgraph Client [Presentation Layer]
         User([Manager / HR Exec]) -->|Access Dashboard| Frontend[React + Vite App]
     end
 
-    subgraph Server [Node.js Backend]
-        Frontend -->|REST API| API[Express API]
-        API -->|Read / Write| Database[(Core HR Database / CSVs)]
+    subgraph Server [Application Layer]
+        Frontend -->|REST API| API[Node.js + Express API]
+        API -->|Read / Write| Database[(MongoDB: Data Layer)]
     end
 
-    subgraph Intelligence [Python ML Service]
+    subgraph Intelligence [Intelligence AI Layer]
         API -- Proxy Requests --> FastAPI[FastAPI Server]
         FastAPI -.->|Serve Predictions| Models((Scikit-Learn .pkl Models))
         API -.->|Fallback if Offline| Heuristics[JS Fallback Logic]
