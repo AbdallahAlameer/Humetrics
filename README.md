@@ -92,6 +92,21 @@ humetrics/
 
 ---
 
+## 📊 Model Explainability with SHAP
+
+Humetrics uses **SHAP (SHapley Additive exPlanations)** to ensure our machine learning models are transparent, interpretable, and free from "black-box" decision making. By analyzing the impact of each feature on the model's predictions, we can identify the true drivers of employee behavior.
+
+For example, our **Attrition Model** reveals key insights into why employees leave, as demonstrated by our SHAP summary analysis:
+
+- **Absence and Leave:** High instances of `HighAbsenceFlag`, `LongLeaveFlag`, and overall `AbsenceDays_Last6M` are among the strongest positive predictors of attrition risk (driving the risk score higher).
+- **Engagement:** As expected, a high `EngagementScore` significantly lowers the likelihood of an employee leaving (driving the risk score lower).
+- **Tenure and Compensation:** `TenureYears` and compensation-related factors like `YearsSinceLastRaise` and `PayStagnationFlag` heavily influence the model, demonstrating that employees with stagnant career progression or compensation are at a higher risk of leaving.
+- **Performance:** Interestingly, `HighPerformerFlag` and `PerformanceRating` also show significant impact, helping HR target retention efforts toward top talent who may be at risk.
+
+This driver analysis allows HR professionals to move beyond simple predictions and implement targeted interventions based on the specific factors affecting each employee.
+
+---
+
 ## 🚀 Getting Started
 
 Follow these steps to set up the complete Humetrics stack locally on your machine. You will need to run three separate servers.
